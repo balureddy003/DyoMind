@@ -1,0 +1,24 @@
+{
+  "id": "a3e1a37e-7d51-4b18-bf1d-14e1713ff993",
+  "user_id": "reddy003@gmail.com",
+  "session_id": "holographic-alien-3174",
+  "messages": [
+    {
+      "content": "sd",
+      "role": "user"
+    }
+  ],
+  "agents": [
+    {
+      "input_key": "23606a63-bbfb-425b-a40f-16c67a4127af",
+      "type": "Custom",
+      "name": "MyAgent1",
+      "system_message": "hello world",
+      "description": "",
+      "icon": "Soup",
+      "index_name": ""
+    }
+  ],
+  "run_mode_locally": false,
+  "timestamp": "2025-05-05 15:11:44"
+}

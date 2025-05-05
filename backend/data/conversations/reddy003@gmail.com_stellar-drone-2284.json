@@ -1,0 +1,24 @@
+{
+  "id": "43213b4b-d140-4d40-bd09-0eb617ad25ff",
+  "user_id": "reddy003@gmail.com",
+  "session_id": "stellar-drone-2284",
+  "messages": [
+    {
+      "content": "zs",
+      "role": "user"
+    }
+  ],
+  "agents": [
+    {
+      "input_key": "23606a63-bbfb-425b-a40f-16c67a4127af",
+      "type": "Custom",
+      "name": "MyAgent1",
+      "system_message": "hello world",
+      "description": "",
+      "icon": "Soup",
+      "index_name": ""
+    }
+  ],
+  "run_mode_locally": false,
+  "timestamp": "2025-05-05 15:35:51"
+}

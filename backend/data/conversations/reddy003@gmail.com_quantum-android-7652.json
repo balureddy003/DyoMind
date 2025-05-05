@@ -1,0 +1,24 @@
+{
+  "id": "2c466570-756f-4977-961f-6e5075160c8d",
+  "user_id": "reddy003@gmail.com",
+  "session_id": "quantum-android-7652",
+  "messages": [
+    {
+      "content": "sdf",
+      "role": "user"
+    }
+  ],
+  "agents": [
+    {
+      "input_key": "23606a63-bbfb-425b-a40f-16c67a4127af",
+      "type": "Custom",
+      "name": "MyAgent1",
+      "system_message": "hello world",
+      "description": "",
+      "icon": "Soup",
+      "index_name": ""
+    }
+  ],
+  "run_mode_locally": false,
+  "timestamp": "2025-05-05 15:34:18"
+}

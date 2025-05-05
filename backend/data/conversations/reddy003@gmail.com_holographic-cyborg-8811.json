@@ -1,0 +1,24 @@
+{
+  "id": "8da64143-8b47-4ff3-a39e-481e6ff200a3",
+  "user_id": "reddy003@gmail.com",
+  "session_id": "holographic-cyborg-8811",
+  "messages": [
+    {
+      "content": "hello",
+      "role": "user"
+    }
+  ],
+  "agents": [
+    {
+      "input_key": "23606a63-bbfb-425b-a40f-16c67a4127af",
+      "type": "Custom",
+      "name": "MyAgent1",
+      "system_message": "hello world",
+      "description": "",
+      "icon": "Soup",
+      "index_name": ""
+    }
+  ],
+  "run_mode_locally": false,
+  "timestamp": "2025-05-05 13:36:52"
+}

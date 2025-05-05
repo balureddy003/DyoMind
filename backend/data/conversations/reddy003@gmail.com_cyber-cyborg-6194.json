@@ -1,0 +1,39 @@
+{
+  "id": "cd612fb1-862f-43b3-912b-93c487894195",
+  "user_id": "reddy003@gmail.com",
+  "session_id": "cyber-cyborg-6194",
+  "messages": [
+    {
+      "content": "hi",
+      "role": "user"
+    }
+  ],
+  "agents": [
+    {
+      "input_key": "0002",
+      "type": "MagenticOne",
+      "name": "Executor",
+      "system_message": "",
+      "description": "",
+      "icon": "\ud83d\udcbb"
+    },
+    {
+      "input_key": "0003",
+      "type": "MagenticOne",
+      "name": "FileSurfer",
+      "system_message": "",
+      "description": "",
+      "icon": "\ud83d\udcc2"
+    },
+    {
+      "input_key": "0004",
+      "type": "MagenticOne",
+      "name": "WebSurfer",
+      "system_message": "",
+      "description": "",
+      "icon": "\ud83c\udfc4\u200d\u2642\ufe0f"
+    }
+  ],
+  "run_mode_locally": false,
+  "timestamp": "2025-05-05 13:12:49"
+}

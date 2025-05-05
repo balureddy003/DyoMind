@@ -1,0 +1,14 @@
+{
+  "id": "48ef317e-e946-480d-a0e5-e9d8ba0639c9",
+  "user_id": "reddy003@gmail.com",
+  "session_id": "cyber-mech-7132",
+  "messages": [
+    {
+      "content": "hello",
+      "role": "user"
+    }
+  ],
+  "agents": [],
+  "run_mode_locally": false,
+  "timestamp": "2025-05-05 15:47:23"
+}

@@ -1,0 +1,47 @@
+{
+  "id": "1955209f-af20-4ba9-b3ac-93629e83d59c",
+  "user_id": "johne@microsoft.com",
+  "session_id": "cyber-mech-6846",
+  "messages": [
+    {
+      "content": "asd",
+      "role": "user"
+    }
+  ],
+  "agents": [
+    {
+      "input_key": "0001",
+      "type": "MagenticOne",
+      "name": "Coder",
+      "system_message": "",
+      "description": "",
+      "icon": "\ud83d\udc68\u200d\ud83d\udcbb"
+    },
+    {
+      "input_key": "0002",
+      "type": "MagenticOne",
+      "name": "Executor",
+      "system_message": "",
+      "description": "",
+      "icon": "\ud83d\udcbb"
+    },
+    {
+      "input_key": "0003",
+      "type": "MagenticOne",
+      "name": "FileSurfer",
+      "system_message": "",
+      "description": "",
+      "icon": "\ud83d\udcc2"
+    },
+    {
+      "input_key": "0004",
+      "type": "MagenticOne",
+      "name": "WebSurfer",
+      "system_message": "",
+      "description": "",
+      "icon": "\ud83c\udfc4\u200d\u2642\ufe0f"
+    }
+  ],
+  "run_mode_locally": false,
+  "timestamp": "2025-05-04 10:03:25"
+}

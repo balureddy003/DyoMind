@@ -1,0 +1,41 @@
+{
+  "id": "443a5121-ddb6-4c35-a6d3-1ac9a1b1a96c",
+  "user_id": "reddy003@gmail.com",
+  "session_id": "cyber-cyborg-3645",
+  "messages": [
+    {
+      "content": "Analyze sensor data and calculate average temperature for sensor COMP-001. Data are in 'sensor' table.",
+      "role": "user"
+    }
+  ],
+  "agents": [
+    {
+      "input_key": "36b4084fx-0001",
+      "type": "MagenticOne",
+      "name": "Coder",
+      "system_message": "",
+      "description": "",
+      "icon": "Terminal"
+    },
+    {
+      "input_key": "36b4084fx-20002",
+      "type": "MagenticOne",
+      "name": "Executor",
+      "system_message": "",
+      "description": "",
+      "icon": "MonitorCog",
+      "index_name": ""
+    },
+    {
+      "input_key": "36b4084fx-18e6-48ce-b7ad-3afa61720351",
+      "type": "CustomMCP",
+      "name": "DataConnector",
+      "system_message": "You are helpful Data provider. Your task is to porivde data in form of CSV format.",
+      "description": "This agent is serving data. Use where there is need to fetch data for analysis.",
+      "icon": "DatabaseZap",
+      "index_name": ""
+    }
+  ],
+  "run_mode_locally": false,
+  "timestamp": "2025-05-04 19:29:56"
+}

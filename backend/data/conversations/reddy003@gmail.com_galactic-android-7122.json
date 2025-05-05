@@ -1,0 +1,51 @@
+{
+  "id": "cea55153-bebc-4fd6-9a4b-287549d076e1",
+  "user_id": "reddy003@gmail.com",
+  "session_id": "galactic-android-7122",
+  "messages": [
+    {
+      "content": "Find me a French restaurant in Dubai with 2 Michelin stars?",
+      "role": "user"
+    }
+  ],
+  "agents": [
+    {
+      "input_key": "0001",
+      "type": "MagenticOne",
+      "name": "Coder",
+      "system_message": "",
+      "description": "",
+      "icon": "Terminal",
+      "index_name": ""
+    },
+    {
+      "input_key": "0002",
+      "type": "MagenticOne",
+      "name": "Executor",
+      "system_message": "",
+      "description": "",
+      "icon": "MonitorCog",
+      "index_name": ""
+    },
+    {
+      "input_key": "0003",
+      "type": "MagenticOne",
+      "name": "FileSurfer",
+      "system_message": "",
+      "description": "",
+      "icon": "File",
+      "index_name": ""
+    },
+    {
+      "input_key": "0004",
+      "type": "MagenticOne",
+      "name": "WebSurfer",
+      "system_message": "",
+      "description": "",
+      "icon": "Globe",
+      "index_name": ""
+    }
+  ],
+  "run_mode_locally": false,
+  "timestamp": "2025-05-04 18:48:13"
+}

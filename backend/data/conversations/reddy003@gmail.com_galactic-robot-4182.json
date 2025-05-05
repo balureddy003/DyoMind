@@ -1,0 +1,24 @@
+{
+  "id": "32d1be32-d8e5-40fe-a27e-7b6e6c9cdc35",
+  "user_id": "reddy003@gmail.com",
+  "session_id": "galactic-robot-4182",
+  "messages": [
+    {
+      "content": "hi",
+      "role": "user"
+    }
+  ],
+  "agents": [
+    {
+      "input_key": "23606a63-bbfb-425b-a40f-16c67a4127af",
+      "type": "Custom",
+      "name": "MyAgent1",
+      "system_message": "hello world",
+      "description": "",
+      "icon": "Soup",
+      "index_name": ""
+    }
+  ],
+  "run_mode_locally": false,
+  "timestamp": "2025-05-05 13:33:18"
+}

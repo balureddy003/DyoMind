@@ -1,0 +1,47 @@
+{
+  "id": "402dccc9-5d54-41af-85bc-fe3e75c7c6de",
+  "user_id": "reddy003@gmail.com",
+  "session_id": "quantum-android-1704",
+  "messages": [
+    {
+      "content": "asd",
+      "role": "user"
+    }
+  ],
+  "agents": [
+    {
+      "input_key": "0001",
+      "type": "MagenticOne",
+      "name": "Coder",
+      "system_message": "",
+      "description": "",
+      "icon": "\ud83d\udc68\u200d\ud83d\udcbb"
+    },
+    {
+      "input_key": "0002",
+      "type": "MagenticOne",
+      "name": "Executor",
+      "system_message": "",
+      "description": "",
+      "icon": "\ud83d\udcbb"
+    },
+    {
+      "input_key": "0003",
+      "type": "MagenticOne",
+      "name": "FileSurfer",
+      "system_message": "",
+      "description": "",
+      "icon": "\ud83d\udcc2"
+    },
+    {
+      "input_key": "0004",
+      "type": "MagenticOne",
+      "name": "WebSurfer",
+      "system_message": "",
+      "description": "",
+      "icon": "\ud83c\udfc4\u200d\u2642\ufe0f"
+    }
+  ],
+  "run_mode_locally": false,
+  "timestamp": "2025-05-04 21:14:24"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "06b785b9-6427-4bf3-a4f9-1b7111ecb342",
+  "user_id": "reddy003@gmail.com",
+  "session_id": "holographic-android-9359",
+  "messages": [
+    {
+      "content": "sdf",
+      "role": "user"
+    }
+  ],
+  "agents": [
+    {
+      "input_key": "23606a63-bbfb-425b-a40f-16c67a4127af",
+      "type": "Custom",
+      "name": "MyAgent1",
+      "system_message": "hello world",
+      "description": "",
+      "icon": "Soup",
+      "index_name": ""
+    }
+  ],
+  "run_mode_locally": false,
+  "timestamp": "2025-05-05 15:29:22"
+}

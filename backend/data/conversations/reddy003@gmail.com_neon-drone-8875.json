@@ -1,0 +1,24 @@
+{
+  "id": "d362d7cc-8aec-45b5-b83b-c931ac142d40",
+  "user_id": "reddy003@gmail.com",
+  "session_id": "neon-drone-8875",
+  "messages": [
+    {
+      "content": "asd",
+      "role": "user"
+    }
+  ],
+  "agents": [
+    {
+      "input_key": "23606a63-bbfb-425b-a40f-16c67a4127af",
+      "type": "Custom",
+      "name": "MyAgent1",
+      "system_message": "hello world",
+      "description": "",
+      "icon": "Soup",
+      "index_name": ""
+    }
+  ],
+  "run_mode_locally": false,
+  "timestamp": "2025-05-05 13:37:24"
+}

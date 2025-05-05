@@ -1,0 +1,69 @@
+{
+  "id": "17dc430c-8125-41dd-ab0f-80653fbd998a",
+  "user_id": "johne@microsoft.com",
+  "session_id": "stellar-alien-8728",
+  "messages": [
+    {
+      "content": "Analyze the sensor data and historical maintenance logs for the high\u2011pressure gas compressor (EquipmentID: COMP-001). Using real\u2011time measurements of temperature, vibration, and pressure, along with the asset\u2019s running hours, detect any early signs of mechanical degradation. Use 'sensor' and 'maintenance' tables from DataConnector as data inputs. After this, correlate these findings with the vendor\u2019s guidelines (downloaded from Emerson\u2019s Predictive Maintenance Guide for Gas Compressors) and the maintenance history. You also have to research if our predictive maintannce guidelines are aligned to the latest practices in the Oil & Gas industry - leverage WebSurfer agent for this research. In particular, determine if rising vibration amplitudes, combined with temperature excursions and delayed calibrations, suggest that the compressor is trending toward failure. Based on this analysis, generate a detailed maintenance alert (text only, formatted as Markdown) including a prioritized repair schedule and recommended corrective actions to mitigate downtime. Provide the output with insights and recommendations in a table format. Make sure to also visually plot temperature, vibration, and pressure data from 'sensor' and 'maintenance' tables as trendlines over time, emphasizing the anomalies - make sure to include all data provided by DataConnector agent when plotting. ",
+      "role": "user"
+    }
+  ],
+  "agents": [
+    {
+      "input_key": "99220001",
+      "type": "MagenticOne",
+      "name": "Coder",
+      "system_message": "You can code in Python and transform data",
+      "description": "You can code in Python and transform data",
+      "icon": "Terminal",
+      "index_name": ""
+    },
+    {
+      "input_key": "99220002",
+      "type": "MagenticOne",
+      "name": "Executor",
+      "system_message": "",
+      "description": "",
+      "icon": "MonitorCog",
+      "index_name": ""
+    },
+    {
+      "input_key": "99220004",
+      "type": "MagenticOne",
+      "name": "WebSurfer",
+      "system_message": "You can do internet research",
+      "description": "You can do internet research",
+      "icon": "Globe",
+      "index_name": ""
+    },
+    {
+      "input_key": "99220005",
+      "type": "Custom",
+      "name": "SensorSentinel",
+      "system_message": "\nYou are Sensor Sentinel, the real\u2011time data guardian for our high\u2011pressure gas compressor. Your primary responsibility is to continuously monitor sensor streams\u2014including temperature, vibration, pressure, and running hours\u2014and detect subtle trends or anomalies that deviate from the manufacturer\u2019s thresholds as described in Emerson\u2019s Predictive Maintenance Guide. Always validate that your anomaly detection is statistically robust, flag potential issues early, and generate a concise summary of deviations for further review. The data comes from DataConnector agent. \n\n",
+      "description": "An agent that monitors sensor streams and detects trends or anomalies for particular device or equipment. Agent has access to all necessary data.",
+      "icon": "BookMarked",
+      "index_name": ""
+    },
+    {
+      "input_key": "99220006",
+      "type": "RAG",
+      "name": "MaintanceKBAgent",
+      "system_message": "",
+      "description": "An agent that has access to internal index and can handle RAG tasks, call this agent if you are getting questions on Emerson\u2019s Predictive Maintenance Guide.",
+      "icon": "Search",
+      "index_name": "ag-demo-pred-maint"
+    },
+    {
+      "input_key": "365765084fx-18e6-48ce-b7ad-3afa61720351",
+      "type": "CustomMCP",
+      "name": "DataConnector",
+      "system_message": "You are helpful Data provider. Your task is to provide data in form of CSV format.",
+      "description": "This agent is serving data. Use where there is need to fetch data for analysis.",
+      "icon": "DatabaseZap",
+      "index_name": ""
+    }
+  ],
+  "run_mode_locally": false,
+  "timestamp": "2025-05-04 18:07:13"
+}

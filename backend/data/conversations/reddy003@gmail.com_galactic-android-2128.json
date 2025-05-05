@@ -1,0 +1,24 @@
+{
+  "id": "5cb74259-9575-48c2-be2c-e3aa9873e254",
+  "user_id": "reddy003@gmail.com",
+  "session_id": "galactic-android-2128",
+  "messages": [
+    {
+      "content": "asd",
+      "role": "user"
+    }
+  ],
+  "agents": [
+    {
+      "input_key": "57166507-aba0-4ebb-a586-0a51cd32a950",
+      "type": "Custom",
+      "name": "MyAgent1",
+      "system_message": "",
+      "description": "",
+      "icon": "Soup",
+      "index_name": ""
+    }
+  ],
+  "run_mode_locally": false,
+  "timestamp": "2025-05-05 15:49:37"
+}

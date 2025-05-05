@@ -1,0 +1,13 @@
+{
+    "model_list": [
+      {
+        "model_name": "deepseek-coder:instruct",
+        "litellm_provider": "ollama",
+        "ollama_model": "deepseek-coder:instruct",
+        "litellm_params": {
+          "model": "ollama/deepseek-coder:instruct",
+          "function_calling": "False"
+        }
+      }
+    ]
+  }

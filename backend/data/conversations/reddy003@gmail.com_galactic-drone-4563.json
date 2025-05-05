@@ -1,0 +1,24 @@
+{
+  "id": "a576b59c-63fd-4af8-867e-1a8e0602fbf2",
+  "user_id": "reddy003@gmail.com",
+  "session_id": "galactic-drone-4563",
+  "messages": [
+    {
+      "content": "ssf",
+      "role": "user"
+    }
+  ],
+  "agents": [
+    {
+      "input_key": "23606a63-bbfb-425b-a40f-16c67a4127af",
+      "type": "Custom",
+      "name": "MyAgent1",
+      "system_message": "hello world",
+      "description": "",
+      "icon": "Soup",
+      "index_name": ""
+    }
+  ],
+  "run_mode_locally": false,
+  "timestamp": "2025-05-05 15:27:23"
+}

@@ -1,0 +1,41 @@
+{
+  "id": "dedc25bf-5ba3-4841-b20a-1303d02d55fc",
+  "user_id": "reddy003@gmail.com",
+  "session_id": "cyber-android-9531",
+  "messages": [
+    {
+      "content": "Analyze sensor data in 'sensor' table. Plot time series for Temperature using simple mathplotlib. Execute script and describe the results.",
+      "role": "user"
+    }
+  ],
+  "agents": [
+    {
+      "input_key": "36b4084fx-0001",
+      "type": "MagenticOne",
+      "name": "Coder",
+      "system_message": "",
+      "description": "",
+      "icon": "Terminal"
+    },
+    {
+      "input_key": "36b4084fx-20002",
+      "type": "MagenticOne",
+      "name": "Executor",
+      "system_message": "",
+      "description": "",
+      "icon": "MonitorCog",
+      "index_name": ""
+    },
+    {
+      "input_key": "36b4084fx-18e6-48ce-b7ad-3afa61720351",
+      "type": "CustomMCP",
+      "name": "DataConnector",
+      "system_message": "You are helpful Data provider. Your task is to porivde data in form of CSV format.",
+      "description": "This agent is serving data. Use where there is need to fetch data for analysis.",
+      "icon": "DatabaseZap",
+      "index_name": ""
+    }
+  ],
+  "run_mode_locally": false,
+  "timestamp": "2025-05-04 19:36:55"
+}

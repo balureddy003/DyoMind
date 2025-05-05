@@ -1,0 +1,24 @@
+{
+  "id": "645c9244-f76a-4b7f-9c4c-080c9e6d3353",
+  "user_id": "reddy003@gmail.com",
+  "session_id": "neon-cyborg-1208",
+  "messages": [
+    {
+      "content": "as",
+      "role": "user"
+    }
+  ],
+  "agents": [
+    {
+      "input_key": "57166507-aba0-4ebb-a586-0a51cd32a950",
+      "type": "Custom",
+      "name": "MyAgent1",
+      "system_message": "",
+      "description": "",
+      "icon": "Soup",
+      "index_name": ""
+    }
+  ],
+  "run_mode_locally": false,
+  "timestamp": "2025-05-05 15:56:01"
+}
