@@ -1,7 +1,7 @@
 import os
-from autogen_ext.models.openai import OpenAIChatCompletionClient
+from autogen_ext.models.openai import AzureOpenAIChatCompletionClient, OpenAIChatCompletionClient
 from autogen_ext.models.ollama import OllamaChatCompletionClient
-from autogen_ext.models.openai import AzureOpenAIChatCompletionClient
+from huggingface_client import HuggingFaceChatCompletionClient
 
 def get_llm_client(provider: str = "azure"):
     provider = provider.lower()
@@ -16,26 +16,38 @@ def get_llm_client(provider: str = "azure"):
             }
         )
 
+    elif provider == "huggingface":
+        return OpenAIChatCompletionClient(
+            model="huggingface/HuggingFaceH4/zephyr-7b-beta",
+            api_key=os.getenv("OPENAI_API_KEY", "sk-no-key-needed"),
+            base_url="http://localhost:4000",
+            model_info={
+                "vision": False,
+                "function_calling": True,
+                "json_output": True,
+                "structured_output": True,
+                "family": "openai"
+            }
+        )
+
     elif provider == "ollama":
-        print("Using native Ollama client")
         return OllamaChatCompletionClient(
             config={
-                "model": os.getenv("OPENAI_MODEL_NAME", "phi3"),
+                "model": os.getenv("OPENAI_MODEL_NAME", "llama3"),
                 "base_url": os.getenv("OPENAI_API_BASE", "http://localhost:11434/v1"),
             }
         )
 
     elif provider == "lite-ollama":
-        print("Using LiteLLM proxy (OpenAI-compatible)")
         return OpenAIChatCompletionClient(
-            model=os.getenv("OPENAI_MODEL_NAME", "phi3"),
+            model=os.getenv("OPENAI_MODEL_NAME", "llama3"),
             api_key=os.getenv("OPENAI_API_KEY", "dummy-key"),
             base_url=os.getenv("OPENAI_API_BASE", "http://localhost:4000"),
             model_info={
-                "vision": False,
-                "function_calling": False,  # <- make sure it's disabled
+                "function_calling": False,
                 "json_output": True,
                 "structured_output": True,
+                "vision": False,
                 "family": "openai"
             }
         )

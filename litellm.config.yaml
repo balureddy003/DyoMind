@@ -1,0 +1,8 @@
+model_list:
+  - model_name: lmstudio/mistral-openorca:latest    # Call this exact name from your app
+    litellm_params:
+      model: mistral-openorca:latest
+      api_key: sk-no-key-needed      
+      base_url: http://localhost:1234/v1              # The actual model LM Studio runs
+      function_calling: true
+      json_output: true
