@@ -32,9 +32,15 @@ def get_llm_client(provider: str = "azure"):
 
     elif provider == "ollama":
         return OllamaChatCompletionClient(
-            config={
-                "model": os.getenv("OPENAI_MODEL_NAME", "llama3"),
-                "base_url": os.getenv("OPENAI_API_BASE", "http://localhost:11434/v1"),
+            model=os.getenv("OPENAI_MODEL_NAME", "llama3"),
+            api_key=os.getenv("OPENAI_API_KEY", "dummy-key"),
+            base_url=os.getenv("OPENAI_API_BASE", "http://localhost:4000"),
+            model_info={
+                "function_calling": True,
+                "json_output": True,
+                "structured_output": True,
+                "vision": False,
+                "family": "openai"
             }
         )
 
@@ -44,7 +50,7 @@ def get_llm_client(provider: str = "azure"):
             api_key=os.getenv("OPENAI_API_KEY", "dummy-key"),
             base_url=os.getenv("OPENAI_API_BASE", "http://localhost:4000"),
             model_info={
-                "function_calling": False,
+                "function_calling": True,
                 "json_output": True,
                 "structured_output": True,
                 "vision": False,

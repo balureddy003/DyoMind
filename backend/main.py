@@ -65,6 +65,59 @@ MAGENTIC_ONE_DEFAULT_AGENTS = [
             },
             ]
 
+# ─── Magentic-One safety-net -- keep ONE copy of this block only ─────────────
+import importlib, inspect, pkgutil, logging
+
+def _locate_orchestrator():
+    """
+    Robustly find MagenticOneOrchestrator no matter which private
+    sub-module Autogen decided to place it in for this release.
+    """
+    # 1) common stable paths first
+    candidates = [
+        "autogen_agentchat.teams._group_chat._magentic_one._orchestrator",
+        "autogen_agentchat.teams._group_chat._magentic_one.magentic_one_orchestrator",
+    ]
+    for mod_path in candidates:
+        try:
+            return importlib.import_module(mod_path).MagenticOneOrchestrator
+        except Exception:
+            pass
+
+    # 2) fall back to walking the whole _magentic_one package
+    base_pkg = "autogen_agentchat.teams._group_chat._magentic_one"
+    for _, mod_name, _ in pkgutil.walk_packages(
+        importlib.import_module(base_pkg).__path__, base_pkg + "."
+    ):
+        try:
+            mod = importlib.import_module(mod_name)
+            for _, cls in inspect.getmembers(mod, inspect.isclass):
+                if cls.__name__ == "MagenticOneOrchestrator":
+                    return cls
+        except Exception:
+            continue
+    raise ImportError("❌  Could not locate MagenticOneOrchestrator class")
+
+# ---------------------------------------------------------------------------
+_MO = _locate_orchestrator()
+
+# install the guard only once
+if not getattr(_MO, "_progress_guard", False):
+    _orig = _MO._orchestrate_step
+
+    async def _guard(self, cancellation_token=None):
+        # guarantee the attribute exists *before* it is accessed
+        if getattr(self, "progress_ledger", None) is None:
+            self.progress_ledger = {}
+        self.progress_ledger.setdefault(
+            "is_request_satisfied", {"answer": False, "plan": False}
+        )
+        return await _orig(self, cancellation_token=cancellation_token)
+
+    _MO._orchestrate_step = _guard        # hot-swap method
+    _MO._progress_guard   = True          # mark as patched
+    logging.getLogger("main").info("✅  Magentic-One safety-net activated")
+# ─────────────────────────────────────────────────────────────────────────────
 # Lifespan handler for startup/shutdown events
 @asynccontextmanager
 async def lifespan(app: FastAPI):
