@@ -1,8 +1,14 @@
+
 model_list:
-  - model_name: lmstudio/mistral-openorca:latest    # Call this exact name from your app
+  - model_name: ollama
     litellm_params:
-      model: mistral-openorca:latest
-      api_key: sk-no-key-needed      
-      base_url: http://localhost:1234/v1              # The actual model LM Studio runs
-      function_calling: true
-      json_output: true
+      model: ollama/llama3.1
+      api_base: http://localhost:11434
+      api_key: sk-no-key-needed
+      api_type: openai
+      llm_provider: ollama
+
+litellm_settings:
+  drop_params: true
+  set_verbose: true
+

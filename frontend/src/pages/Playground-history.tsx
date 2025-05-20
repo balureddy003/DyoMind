@@ -169,13 +169,13 @@ export default function PlaygroundHistory() {
                 {/* <img src={banner} alt="Banner" className="h-64" /> */}
                 {/* <SidebarTrigger />   */}
                 {/* <Bot className="h-8 w-8" /> */}
-                <img src={ag  } alt="Banner" className="h-8" />
-                <Separator orientation="vertical" className="mr-2 h-4" />
+               
+               
                 <Breadcrumb>
                   <BreadcrumbList>
                     <BreadcrumbItem className="hidden md:block">
                       <BreadcrumbLink href="#">
-                        AutoGen &amp; MagenticOne demo
+                       Dyo Mind
                       </BreadcrumbLink>
                     </BreadcrumbItem>
                     <BreadcrumbSeparator className="hidden md:block" />

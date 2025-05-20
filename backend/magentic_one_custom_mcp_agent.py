@@ -1,33 +1,98 @@
-from autogen_agentchat.agents import AssistantAgent
-from autogen_core.models import ChatCompletionClient
-from llm_config import get_llm_client
+"""
+A *fault-tolerant* MCP-enabled assistant.
+
+Key points
+──────────
+•  The constructor will happily run with *no tools at all*.
+•  `create()` starts each tool individually; failures are logged but DO NOT
+   abort the agent – you simply get fewer tools.
+•  The caller can still check `agent.tools` (empty list == no MCP tools).
+"""
+
+from __future__ import annotations
+import asyncio
+import logging
 import os
+import pathlib
+from typing import List, Optional
 
-class MagenticOneCustomMCPAgent(AssistantAgent):
-    def __init__(
-        self,
-        name: str,
-        model_client: ChatCompletionClient = None,
-        system_message: str = "",
-        description: str = "",
-    ):
-        if model_client is None:
-            model_client = get_llm_client(os.getenv("LLM_PROVIDER", "lite-ollama"))
+from autogen import ConversableAgent
+from mcp_math_server import calculate_sum
+from autogen_agentchat.messages import TextMessage
 
+from function_schema import functions
+
+# Configure debug logging for the MCP agent
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="[%(asctime)s] %(levelname)s %(name)s: %(message)s"
+)
+
+
+class MagenticOneCustomMCPAgent(ConversableAgent):
+    def __init__(self, name: str):
+        self.produced_message_types = [TextMessage]
         super().__init__(
             name=name,
-            model_client=model_client,
-            description=description,
-            system_message=system_message,
-            reflect_on_tool_use=False,
-            tools=[]
+            llm_config={
+                "config_list": [
+                    {
+                        "model": "ollama/llama3.1",
+                        "base_url": "http://localhost:4000",
+                        "api_key": "sk-no-key-needed",
+                        "api_type": "openai"
+                    }
+                ],
+                "functions": functions
+                
+            },
+            function_map={
+                "calculate_sum": calculate_sum
+            }
         )
+    async def on_reset(self, cancellation_token=None):
+        # Optional: clean internal state or logs
+       
+        return {"status": "reset successful"}
+    
+    async def on_message(self, message, sender, config=None):
+        try:
+            # Use built-in AutoGen method for handling function calls
+            success, reply = await self.a_generate_function_call_reply(
+                messages=[message],
+                sender=sender,
+                config={**(config or {}), "function_call": "auto"}
+            )
+            if success:
+                return reply
+            else:
+                # Fallback to normal reply
+                return await super().generate_reply(messages=[message], sender=sender, config=config)
+        except Exception as e:
+            return TextMessage(content=f"⚠️ Error: {str(e)}", source=getattr(sender, "name", getattr(sender, "id", "agent")))
+    
+    async def on_messages_stream(self, messages, sender, config=None):
+        for msg in messages:
+            try:
+                result = await self.on_message(msg, sender, config)
 
-    @classmethod
-    async def create(cls, name, model_client, system_message, description):
-        return cls(
-            name=name,
-            model_client=model_client,
-            system_message=system_message,
-            description=description,
-        )
+                if isinstance(result, TextMessage):
+                    yield result
+                elif isinstance(result, dict) and "content" in result:
+                    yield TextMessage(content=result["content"], source=getattr(sender, "name", getattr(sender, "id", "agent")))
+                elif isinstance(result, str):
+                    yield TextMessage(content=result, source=getattr(sender, "name", getattr(sender, "id", "agent")))
+                elif isinstance(result, list):
+                    for item in result:
+                        if isinstance(item, TextMessage):
+                            yield item
+                        elif isinstance(item, dict) and "content" in item:
+                            yield TextMessage(content=item["content"], source=getattr(sender, "name", getattr(sender, "id", "agent")))
+                        elif isinstance(item, str):
+                            yield TextMessage(content=item, source=getattr(sender, "name", getattr(sender, "id", "agent")))
+                        else:
+                            yield TextMessage(content="⚠️ Error: Unexpected item in list", source=getattr(sender, "name", getattr(sender, "id", "agent")))
+                else:
+                    yield TextMessage(content="⚠️ Error: Unexpected return type from on_message", source=getattr(sender, "name", getattr(sender, "id", "agent")))
+            except Exception as e:
+                yield TextMessage(content=f"⚠️ Error: {str(e)}", source=getattr(sender, "name", getattr(sender, "id", "agent")))

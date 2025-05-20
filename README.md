@@ -18,3 +18,9 @@ uvicorn main:app --reload
 ### run the frontend
 cd frontend
 npm run dev
+
+### install mongodb
+
+
+### install litellm
+ litellm --config litellm.config.yaml

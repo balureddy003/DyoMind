@@ -71,8 +71,8 @@ export default function GetStarted() {
             {/* <img src={banner} alt="Banner" className="h-64" /> */}
             {/* <SidebarTrigger />   */}
             {/* <Bot className="h-8 w-8" /> */}
-            <img src={ag  } alt="Banner" className="h-8" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
+          
+           
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
