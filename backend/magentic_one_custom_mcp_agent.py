@@ -67,9 +67,14 @@ class MagenticOneCustomMCPAgent(ConversableAgent):
                 return reply
             else:
                 # Fallback to normal reply
-                return await super().generate_reply(messages=[message], sender=sender, config=config)
+                return await self.generate_reply(messages=[message], sender=sender, config=config)
         except Exception as e:
-            return TextMessage(content=f"⚠️ Error: {str(e)}", source=getattr(sender, "name", getattr(sender, "id", "agent")))
+            return TextMessage(
+                content=f"⚠️ Error: {str(e)}",
+                source=getattr(sender, "name", getattr(sender, "id", "agent")),
+                metadata={},
+                models_usage=None
+            )
     
     async def on_messages_stream(self, messages, sender, config=None):
         for msg in messages:
@@ -77,22 +82,68 @@ class MagenticOneCustomMCPAgent(ConversableAgent):
                 result = await self.on_message(msg, sender, config)
 
                 if isinstance(result, TextMessage):
-                    yield result
+                    # Ensure str content and explicit metadata/models_usage
+                    yield TextMessage(
+                        content=str(result.content),
+                        source=getattr(sender, "name", getattr(sender, "id", "agent")),
+                        metadata={},
+                        models_usage=None
+                    )
                 elif isinstance(result, dict) and "content" in result:
-                    yield TextMessage(content=result["content"], source=getattr(sender, "name", getattr(sender, "id", "agent")))
+                    yield TextMessage(
+                        content=str(result["content"]),
+                        source=getattr(sender, "name", getattr(sender, "id", "agent")),
+                        metadata={},
+                        models_usage=None
+                    )
                 elif isinstance(result, str):
-                    yield TextMessage(content=result, source=getattr(sender, "name", getattr(sender, "id", "agent")))
+                    yield TextMessage(
+                        content=str(result),
+                        source=getattr(sender, "name", getattr(sender, "id", "agent")),
+                        metadata={},
+                        models_usage=None
+                    )
                 elif isinstance(result, list):
                     for item in result:
                         if isinstance(item, TextMessage):
-                            yield item
+                            yield TextMessage(
+                                content=str(item.content),
+                                source=getattr(sender, "name", getattr(sender, "id", "agent")),
+                                metadata={},
+                                models_usage=None
+                            )
                         elif isinstance(item, dict) and "content" in item:
-                            yield TextMessage(content=item["content"], source=getattr(sender, "name", getattr(sender, "id", "agent")))
+                            yield TextMessage(
+                                content=str(item["content"]),
+                                source=getattr(sender, "name", getattr(sender, "id", "agent")),
+                                metadata={},
+                                models_usage=None
+                            )
                         elif isinstance(item, str):
-                            yield TextMessage(content=item, source=getattr(sender, "name", getattr(sender, "id", "agent")))
+                            yield TextMessage(
+                                content=str(item),
+                                source=getattr(sender, "name", getattr(sender, "id", "agent")),
+                                metadata={},
+                                models_usage=None
+                            )
                         else:
-                            yield TextMessage(content="⚠️ Error: Unexpected item in list", source=getattr(sender, "name", getattr(sender, "id", "agent")))
+                            yield TextMessage(
+                                content="⚠️ Error: Unexpected item in list",
+                                source=getattr(sender, "name", getattr(sender, "id", "agent")),
+                                metadata={},
+                                models_usage=None
+                            )
                 else:
-                    yield TextMessage(content="⚠️ Error: Unexpected return type from on_message", source=getattr(sender, "name", getattr(sender, "id", "agent")))
+                    yield TextMessage(
+                        content="⚠️ Error: Unexpected return type from on_message",
+                        source=getattr(sender, "name", getattr(sender, "id", "agent")),
+                        metadata={},
+                        models_usage=None
+                    )
             except Exception as e:
-                yield TextMessage(content=f"⚠️ Error: {str(e)}", source=getattr(sender, "name", getattr(sender, "id", "agent")))
+                yield TextMessage(
+                    content=f"⚠️ Error: {str(e)}",
+                    source=getattr(sender, "name", getattr(sender, "id", "agent")),
+                    metadata={},
+                    models_usage=None
+                )
