@@ -1,4 +1,3 @@
-
 import os
 from autogen_ext.models.openai import AzureOpenAIChatCompletionClient, OpenAIChatCompletionClient
 from autogen_ext.models.ollama import OllamaChatCompletionClient
@@ -8,7 +7,7 @@ from huggingface_client import HuggingFaceChatCompletionClient
 import json
 from autogen_ext.models.ollama._ollama_client import Message
 import autogen_ext.models.ollama._ollama_client as _ollama_mod
-
+from autogen import LLMConfig
 _orig_tool_message_to_ollama = _ollama_mod.tool_message_to_ollama
 
 def _patched_tool_message_to_ollama(message):
@@ -74,7 +73,7 @@ def get_llm_client(provider: str = "azure"):
         client = OpenAIChatCompletionClient(
             model=os.getenv("OPENAI_MODEL_NAME", "ollama/llama3.1"),
             api_key=os.getenv("OPENAI_API_KEY", "dummy-key"),
-            base_url=os.getenv("OPENAI_API_BASE", "http://localhost:4000"),
+            base_url=os.getenv("OPENAI_API_BASE", "http://localhost:4000/v1"),
             model_info={
                 "function_calling": True,
                 "json_output": True,
@@ -106,4 +105,32 @@ def get_llm_client(provider: str = "azure"):
     ]
     client.function_call = "auto"
 
-    return client
+    # Patch attributes
+    client.model = getattr(client, "model", "")
+    client.base_url = getattr(client, "base_url", "")
+    client.api_key = getattr(client, "api_key", "")
+    client._patched_model_info = getattr(client, "model_info", {
+        "function_calling": True,
+        "json_output": True,
+        "structured_output": True,
+        "vision": False
+    })
+
+    return client             
+
+# --- Global LLMConfig instance for MCP setup ---
+from autogen import LLMConfig
+
+provider = os.getenv("LLM_PROVIDER", "lite-ollama")
+client = get_llm_client(provider)
+
+llm_config = LLMConfig(
+    config_list=[
+        {
+            "model": client.model or "ollama/llama3.1",
+            "base_url": client.base_url or "http://localhost:4000/v1",
+            "api_key": client.api_key or "sk-no-key-needed",
+            "api_type": "openai"
+        }
+    ]
+)
