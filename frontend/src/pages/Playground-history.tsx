@@ -50,7 +50,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { MarkdownRenderer } from '@/components/markdown-display';
 import { Footer } from '@/components/Footer'
 
-const BASE_URL = import.meta.env.VITE_BASE_URL || "http://127.0.0.1:8000";
+const BASE_URL = import.meta.env.VITE_BASE_URL || "https://autogen-demo-be2.whiteground-dbb1b0b8.eastus.azurecontainerapps.io";
 const ALLWAYS_LOGGED_IN =
   import.meta.env.VITE_ALLWAYS_LOGGED_IN === "true" ? true : false;
 const ACTIVATION_CODE = import.meta.env.VITE_ACTIVATON_CODE || "0000";
@@ -169,13 +169,13 @@ export default function PlaygroundHistory() {
                 {/* <img src={banner} alt="Banner" className="h-64" /> */}
                 {/* <SidebarTrigger />   */}
                 {/* <Bot className="h-8 w-8" /> */}
-               
-               
+                <img src={ag  } alt="Banner" className="h-8" />
+                <Separator orientation="vertical" className="mr-2 h-4" />
                 <Breadcrumb>
                   <BreadcrumbList>
                     <BreadcrumbItem className="hidden md:block">
                       <BreadcrumbLink href="#">
-                       Dyo Mind
+                        AutoGen &amp; MagenticOne demo
                       </BreadcrumbLink>
                     </BreadcrumbItem>
                     <BreadcrumbSeparator className="hidden md:block" />

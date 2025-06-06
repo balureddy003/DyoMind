@@ -1,67 +1,142 @@
 import asyncio
 import logging
 import os
-import tempfile
+import time
 
-from typing import Optional
-from autogen_agentchat.teams._group_chat._magentic_one._magentic_one_orchestrator import MagenticOneOrchestrator
-from guard_utils import _guard
+from typing import Optional, AsyncGenerator, Dict, Any, List
 from autogen_agentchat.ui import Console
 from autogen_agentchat.agents import CodeExecutorAgent
 from autogen_agentchat.teams import MagenticOneGroupChat
 from autogen_ext.agents.file_surfer import FileSurfer
 from autogen_ext.agents.magentic_one import MagenticOneCoderAgent
+from autogen_ext.agents.web_surfer import MultimodalWebSurfer
+from autogen_ext.code_executors.local import LocalCommandLineCodeExecutor
 from autogen_ext.code_executors.azure import ACADynamicSessionsCodeExecutor
 from autogen_ext.code_executors.docker import DockerCommandLineCodeExecutor
-from autogen_core import SingleThreadedAgentRuntime, CancellationToken
+from autogen_ext.models.openai import AzureOpenAIChatCompletionClient
+from autogen_core import AgentId, AgentProxy, DefaultTopicId
+from autogen_core import SingleThreadedAgentRuntime
+from autogen_core import CancellationToken
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider
+import tempfile
+
+from autogen_ext.models.openai import AzureOpenAIChatCompletionClient
 from dotenv import load_dotenv
-from magentic_one_custom_mcp_agent import MagenticOneCustomMCPAgent
+load_dotenv()
+
 from magentic_one_custom_agent import MagenticOneCustomAgent
 from magentic_one_custom_rag_agent import MagenticOneRAGAgent
-load_dotenv()
-from autogen_ext.agents.web_surfer import MultimodalWebSurfer
-from llm_config import get_llm_client
+from magentic_one_custom_mcp_agent import MagenticOneCustomMCPAgent
 
+azure_credential = DefaultAzureCredential()
+token_provider = get_bearer_token_provider(
+    azure_credential, "https://cognitiveservices.azure.com/.default"
+)
 
 def generate_session_name():
+    '''Generate a unique session name based on random sci-fi words, e.g. quantum-cyborg-1234'''
     import random
-    adjectives = ["quantum", "neon", "stellar", "galactic", "cyber", "holographic"]
-    nouns = ["cyborg", "android", "drone", "mech", "robot", "alien"]
-    return f"{random.choice(adjectives)}-{random.choice(nouns)}-{random.randint(1000, 9999)}"
 
+    adjectives = [
+        "quantum", "neon", "stellar", "galactic", "cyber", "holographic", "plasma", "nano", "hyper", "virtual",
+        "cosmic", "interstellar", "lunar", "solar", "astro", "exo", "alien", "robotic", "synthetic", "digital",
+        "futuristic", "parallel", "extraterrestrial", "transdimensional", "biomechanical", "cybernetic", "hologram",
+        "metaphysical", "subatomic", "tachyon", "warp", "xeno", "zenith", "zerogravity", "antimatter", "darkmatter",
+        "neural", "photon", "quantum", "singularity", "space-time", "stellar", "telepathic", "timetravel", "ultra",
+        "virtualreality", "wormhole"
+    ]
+    nouns = [
+        "cyborg", "android", "drone", "mech", "robot", "alien", "spaceship", "starship", "satellite", "probe",
+        "astronaut", "cosmonaut", "galaxy", "nebula", "comet", "asteroid", "planet", "moon", "star", "quasar",
+        "black-hole", "wormhole", "singularity", "dimension", "universe", "multiverse", "matrix", "simulation",
+        "hologram", "avatar", "clone", "replicant", "cyberspace", "nanobot", "biobot", "exosuit", "spacesuit",
+        "terraformer", "teleporter", "warpdrive", "hyperdrive", "stasis", "cryosleep", "fusion", "fission", "antigravity",
+        "darkenergy", "neutrino", "tachyon", "photon"
+    ]
+
+    adjective = random.choice(adjectives)
+    noun = random.choice(nouns)
+    number = random.randint(1000, 9999)
+    
+    return f"{adjective}-{noun}-{number}"
 
 class MagenticOneHelper:
-    def __init__(self, logs_dir: str = None, save_screenshots: bool = False, run_locally: bool = False, llm_client=None) -> None:
+    def __init__(self, logs_dir: str = None, save_screenshots: bool = False, run_locally: bool = False, user_id: str = None) -> None:
+        """
+        A helper class to interact with the MagenticOne system.
+        Initialize MagenticOne instance.
+
+        Args:
+            logs_dir: Directory to store logs and downloads
+            save_screenshots: Whether to save screenshots of web pages
+            user_id: The user ID associated with this helper instance
+        """
         self.logs_dir = logs_dir or os.getcwd()
-        # allow injecting a pre-configured LLM client (functions-aware)
-        self.client = llm_client
         self.runtime: Optional[SingleThreadedAgentRuntime] = None
+        # self.log_handler: Optional[LogHandler] = None
         self.save_screenshots = save_screenshots
         self.run_locally = run_locally
+
+        self.user_id = user_id
+
         self.max_rounds = 50
         self.max_time = 25 * 60
         self.max_stalls_before_replan = 5
         self.return_final_answer = True
         self.start_page = "https://www.bing.com"
 
-        os.makedirs(self.logs_dir, exist_ok=True)
+        if not os.path.exists(self.logs_dir):
+            os.makedirs(self.logs_dir)
 
-    async def initialize(self, agents, session_id=None) -> None:
+    async def initialize(self, agents, session_id = None) -> None:
+        """
+        Initialize the MagenticOne system, setting up agents and runtime.
+        """
+        # Create the runtime
         self.runtime = SingleThreadedAgentRuntime()
-        # Patch the orchestrator to use our guarded progress step
-        MagenticOneOrchestrator._orchestrate_step = _guard
-        MagenticOneOrchestrator._progress_guard = True
-        logging.getLogger("main").info("✅  Magentic-One safety-net activated")
-        self.session_id = session_id or generate_session_name()
+        
+        # generate session id from current datetime
+        if session_id is None:
+            self.session_id = generate_session_name()
+        else:
+            self.session_id = session_id
+        # print(f"Session MODEL gpt-4.1-2025-04-14")
+        print(f"Session MODEL o4-mini-2025-04-16")
+        self.client = AzureOpenAIChatCompletionClient(
+            model="gpt-4.1-2025-04-14",
+            azure_deployment="gpt-4.1",
+            api_version="2025-03-01-preview",
+            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+            azure_ad_token_provider=token_provider,
+            model_info={
+                "vision": True,
+                "function_calling": True,
+                "json_output": True,
+                "family": "gpt-4o"
+            }
+        )
 
-        # if no client was injected, build one now
-        if self.client is None:
-            provider = os.getenv("LLM_PROVIDER", "ollama")
-            self.client = get_llm_client(provider)
+        self.client_reasoning = AzureOpenAIChatCompletionClient(
+            model="o4-mini-2025-04-16",
+            azure_deployment="o4-mini",
+            api_version="2025-03-01-preview",
+            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+            azure_ad_token_provider=token_provider,
+            model_info={
+                "vision": True,
+                "function_calling": True,
+                "json_output": True,
+                "family": "o4"
+            }
+        )
 
-        self.agents = self.setup_agents(agents, self.client, self.logs_dir)
 
-    def setup_agents(self, agents, client, logs_dir):
+        # Set up agents
+        self.agents = await self.setup_agents(agents, self.client, self.logs_dir) 
+
+        print("Agents setup complete!")
+
+    async def setup_agents(self, agents, client, logs_dir):
         agent_list = []
         for agent in agents:
             # This is default MagenticOne agent - Coder
@@ -75,9 +150,8 @@ class MagenticOneHelper:
                 # handle local = local docker execution
                 if self.run_locally:
                     #docker
-                    code_executor = DockerCommandLineCodeExecutor(work_dir=logs_dir, init_command="pip install pandas")
-                    code_executor.start()
-
+                    code_executor = DockerCommandLineCodeExecutor(work_dir=logs_dir)
+                    await code_executor.start()
                     executor = CodeExecutorAgent("Executor", code_executor=code_executor)
                 
                 # or remote = Azure ACA Dynamic Sessions execution
@@ -100,7 +174,7 @@ class MagenticOneHelper:
 
             # This is default MagenticOne agent - WebSurfer
             elif (agent["type"] == "MagenticOne" and agent["name"] == "WebSurfer"):
-                web_surfer = MultimodalWebSurfer("WebSurfer", model_client=client, start_page="https://azure.microsoft.com/en-us/blog/?sort-by=newest-oldest&category=ai-machine-learning&content-type=announcements&date=any&s=")
+                web_surfer = MultimodalWebSurfer("WebSurfer", model_client=client)
                 agent_list.append(web_surfer)
                 print("WebSurfer added!")
             
@@ -124,23 +198,15 @@ class MagenticOneHelper:
                 print(f'{agent["name"]} (custom) added!')
             
             elif (agent["type"] == "CustomMCP"):
-                try:
-                    from mcp_math_server import get_all_function_map
-                    function_map = get_all_function_map()
-                except Exception as e:
-                    print(f"Warning: failed to load function map for {agent['name']}. Error: {e}")
-                    function_map = {}
-
-                custom_agent = MagenticOneCustomMCPAgent(name=agent["name"])
-                if hasattr(custom_agent, "function_map") and isinstance(function_map, dict):
-                    try:
-                        custom_agent.__dict__["function_map"] = function_map
-                        print(f"{agent['name']} (CustomMCP) initialized with function map: {list(function_map.keys())}")
-                    except Exception as set_err:
-                        print(f"Failed to assign function map: {set_err}")
-                else:
-                    print(f"{agent['name']} (CustomMCP) initialized without function map")
+                custom_agent = await MagenticOneCustomMCPAgent.create(
+                    agent["name"], 
+                    client, 
+                    agent["system_message"] + "\n\n in case of email use this address as TO: " + self.user_id, 
+                    agent["description"],
+                    self.user_id
+                )
                 agent_list.append(custom_agent)
+                print(f'{agent["name"]} (custom MCP) added!')
 
             
             # This is custom agent - RAG agent - you need to specify index_name and Azure Cognitive Search service endpoint and admin key in .env file
@@ -164,24 +230,28 @@ class MagenticOneHelper:
         team = MagenticOneGroupChat(
             participants=self.agents,
             model_client=self.client,
+            # model_client=self.client_reasoning,
             max_turns=self.max_rounds,
             max_stalls=self.max_stalls_before_replan,
-            emit_team_events=False
+            emit_team_events=False,
+            
         )
         cancellation_token = CancellationToken()
         stream = team.run_stream(task=task, cancellation_token=cancellation_token)
         return stream, cancellation_token
-
-
+    
 async def main(agents, task, run_locally) -> None:
+
     magentic_one = MagenticOneHelper(logs_dir=".", run_locally=run_locally)
     await magentic_one.initialize(agents)
+
     team = MagenticOneGroupChat(
-        participants=magentic_one.agents,
-        model_client=magentic_one.client,
-        max_turns=magentic_one.max_rounds,
-        max_stalls=magentic_one.max_stalls_before_replan,
-    )
+            participants=magentic_one.agents,
+            model_client=magentic_one.client,
+            max_turns=magentic_one.max_rounds,
+            max_stalls=magentic_one.max_stalls_before_replan,
+            
+        )
     try:
         await Console(team.run_stream(task=task))
     except Exception as e:
@@ -189,19 +259,53 @@ async def main(agents, task, run_locally) -> None:
     finally:
         await team.shutdown()
 
-
-if __name__ == "__main__":
+if __name__ == "__main__":   
+    MAGENTIC_ONE_DEFAULT_AGENTS = [
+            {
+            "input_key":"0001",
+            "type":"MagenticOne",
+            "name":"Coder",
+            "system_message":"",
+            "description":"",
+            "icon":"👨‍💻"
+            },
+            {
+            "input_key":"0002",
+            "type":"MagenticOne",
+            "name":"Executor",
+            "system_message":"",
+            "description":"",
+            "icon":"💻"
+            },
+            {
+            "input_key":"0003",
+            "type":"MagenticOne",
+            "name":"FileSurfer",
+            "system_message":"",
+            "description":"",
+            "icon":"📂"
+            },
+            {
+            "input_key":"0004",
+            "type":"MagenticOne",
+            "name":"WebSurfer",
+            "system_message":"",
+            "description":"",
+            "icon":"🏄‍♂️"
+            },
+            ]
+    
     import argparse
-    parser = argparse.ArgumentParser(description="Run MagenticOneHelper with specified task.")
-    parser.add_argument("--task", "-t", type=str, required=True, help="The task to run, e.g., 'Explain async IO in Python'")
-    parser.add_argument("--run_locally", action="store_true", help="Run code execution locally")
+    parser = argparse.ArgumentParser(description="Run MagenticOneHelper with specified task and run_locally option.")
+    parser.add_argument("--task", "-t", type=str, required=True, help="The task to run, e.g. 'How much taxes elon musk paid?'")
+    parser.add_argument("--run_locally", action="store_true", help="Run locally if set")
+    
+    # You can run this command from terminal
+    # python magentic_one_helper.py --task "Find me a French restaurant in Dubai with 2 Michelin stars?"
+    
     args = parser.parse_args()
 
-    MAGENTIC_ONE_DEFAULT_AGENTS = [
-        {"input_key": "0001", "type": "MagenticOne", "name": "Coder", "system_message": "", "description": "", "icon": "👨‍💻"},
-        {"input_key": "0002", "type": "MagenticOne", "name": "Executor", "system_message": "", "description": "", "icon": "💻"},
-        {"input_key": "0003", "type": "MagenticOne", "name": "FileSurfer", "system_message": "", "description": "", "icon": "📂"},
-        {"input_key": "0004", "type": "Custom", "name": "CustomAssistant", "system_message": "You are helpful.", "description": "Basic assistant agent."}
-    ]
+    asyncio.run(main(MAGENTIC_ONE_DEFAULT_AGENTS,args.task, args.run_locally))
 
-    asyncio.run(main(MAGENTIC_ONE_DEFAULT_AGENTS, args.task, args.run_locally))
+
+

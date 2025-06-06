@@ -13,9 +13,9 @@ interface UserContextType {
 }
 
 const defaultUserInfo: UserInfo = {
-  name: "balu",
-  email: "reddy003@gmail.com",
-  avatar: "",
+  name: "Jon Doe",
+  email: "demo@contoso.com",
+  avatar: h1,
 };
 
 export const UserContext = createContext<UserContextType>({

@@ -50,7 +50,7 @@ class UserResponse(UserBase):
     
     class Config:
         orm_mode = True
-from autogen_core import CancellationToken
+
 class AutoGenMessage(BaseModel):
     time: str
     type: Optional[str] = None

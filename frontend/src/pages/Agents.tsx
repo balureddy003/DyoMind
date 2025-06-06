@@ -16,7 +16,7 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar"
 import { ThemeProvider } from "@/components/theme-provider"
-import {  RefreshCcw, Plus ,Loader2, Lock } from "lucide-react"
+import {  RefreshCcw, Plus ,Loader2, Lock, Trash2 } from "lucide-react"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog"
 import { AudioWaveform, ChartNoAxesCombined, DollarSign, Map, ShieldAlert, ShoppingBasket, Wrench } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -143,6 +143,23 @@ export default function Agents() {
     console.log('Selected agents:', agents);
   }
 
+  const deleteTeam = async (teamId: string) => {
+    if (!window.confirm("Are you sure you want to delete this team?")) return;
+    try {
+      const response = await fetch(`${BASE_URL}/teams/${teamId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error(`Error deleting team: ${response.statusText}`);
+      }
+      await reloadTeams();
+    } catch (error) {
+      console.error('Error deleting team:', error);
+      // TODO: Show error message to user
+      await reloadTeams();
+    }
+  };
+
   if (loading) {
     return (
       <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
@@ -171,12 +188,13 @@ export default function Agents() {
             {/* <img src={banner} alt="Banner" className="h-64" /> */}
             {/* <SidebarTrigger />   */}
             {/* <Bot className="h-8 w-8" /> */}
-          
+            <img src={ag  } alt="Banner" className="h-8" />
+            <Separator orientation="vertical" className="mr-2 h-4" />
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
                   <BreadcrumbLink href="#">
-                    Dyo Mind
+                    AutoGen & MagenticOne demo
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
@@ -328,6 +346,16 @@ export default function Agents() {
                           {team.name}
                           <Separator orientation="vertical" className="mr-2 h-4 invisible" />
                           {team.protected && <Lock className="inline h-4 w-4 text-muted-foreground" />}
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="ml-2"
+                            onClick={() => deleteTeam(team.id)}
+                            title="Delete team"
+                            disabled={!!team.protected}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
                       </div>
                   </CardTitle>
                   <Separator />

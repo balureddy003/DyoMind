@@ -13,17 +13,11 @@ from contextlib import asynccontextmanager
 from fastapi.responses import StreamingResponse, Response
 import json, asyncio
 from magentic_one_helper import MagenticOneHelper
-
-# Ensure the custom agent import is present
-from magentic_one_custom_mcp_agent import MagenticOneCustomMCPAgent
 from autogen_agentchat.messages import MultiModalMessage, TextMessage, ToolCallExecutionEvent, ToolCallRequestEvent, SelectSpeakerEvent, ToolCallSummaryMessage
 from autogen_agentchat.base import TaskResult
 from magentic_one_helper import generate_session_name
 import aisearch
 import logging
-logging.getLogger("pymongo").setLevel(logging.WARNING)
-logging.getLogger("pymongo.topology").setLevel(logging.WARNING)
-logging.getLogger("pymongo.connection").setLevel(logging.WARNING)
 
 from datetime import datetime 
 from schemas import AutoGenMessage
@@ -71,106 +65,13 @@ MAGENTIC_ONE_DEFAULT_AGENTS = [
             },
             ]
 
-# ─── Magentic-One safety-net -- keep ONE copy of this block only ─────────────
-import importlib, inspect, pkgutil, logging
-
-def _locate_orchestrator():
-    """
-    Robustly find MagenticOneOrchestrator no matter which private
-    sub-module Autogen decided to place it in for this release.
-    """
-    # 1) common stable paths first
-    candidates = [
-        "autogen_agentchat.teams._group_chat._magentic_one._orchestrator",
-        "autogen_agentchat.teams._group_chat._magentic_one.magentic_one_orchestrator",
-    ]
-    for mod_path in candidates:
-        try:
-            return importlib.import_module(mod_path).MagenticOneOrchestrator
-        except Exception:
-            pass
-
-    # 2) fall back to walking the whole _magentic_one package
-    base_pkg = "autogen_agentchat.teams._group_chat._magentic_one"
-    for _, mod_name, _ in pkgutil.walk_packages(
-        importlib.import_module(base_pkg).__path__, base_pkg + "."
-    ):
-        try:
-            mod = importlib.import_module(mod_name)
-            for _, cls in inspect.getmembers(mod, inspect.isclass):
-                if cls.__name__ == "MagenticOneOrchestrator":
-                    return cls
-        except Exception:
-            continue
-    raise ImportError("❌  Could not locate MagenticOneOrchestrator class")
-
-# ---------------------------------------------------------------------------
-_MO = _locate_orchestrator()
-
-# install the guard only once
-if not getattr(_MO, "_progress_guard", False):
-    _orig = _MO._orchestrate_step
-
-async def _guard(self, cancellation_token=None):
-    # Make sure the nested structure is always present
-    if getattr(self, "progress_ledger", None) is None:
-        self.progress_ledger = {}
-    # Ensure generic tool_call section exists for any function call
-    self.progress_ledger.setdefault("tool_call", {})
-    self.progress_ledger["tool_call"].setdefault("tool_name", "")
-    self.progress_ledger["tool_call"].setdefault("arguments", {})
-    # Ensure every section in the ledger is a dict with string defaults
-    for section, data in self.progress_ledger.items():
-        if not isinstance(data, dict):
-            self.progress_ledger[section] = {}
-            data = self.progress_ledger[section]
-        data.setdefault("answer", "")
-        data.setdefault("plan", "")
-
-    try:
-        result = await _orig(self, cancellation_token=cancellation_token)
-        # Normalize any new sections added by the original method
-        for section, data in self.progress_ledger.items():
-            if isinstance(data, dict):
-                data.setdefault("answer", "")
-                data.setdefault("plan", "")
-        # Post-call normalization for generic tool_call
-        tcp = self.progress_ledger.get("tool_call", {})
-        if isinstance(tcp, dict):
-            tcp.setdefault("tool_name", "")
-            tcp.setdefault("arguments", {})
-        return result
-# Dedented: Apply the progress‐ledger guard by swapping in our wrapper
-    except Exception as exc:
-        # Handle specific parse or missing-field errors
-        if (
-            "parse ledger information" in str(exc)
-            or (isinstance(exc, KeyError) and exc.args == ("answer",))
-        ):
-            if hasattr(self, "_logger"):
-                self._logger.warning(
-                    "⚠️  LLM returned an unparsable or incomplete progress‑ledger. "
-                    "Injecting default ledger and continuing. Details: %s", exc
-                )
-            self.progress_ledger = {
-                "is_request_satisfied": {"answer": "", "plan": ""},
-                "instruction_or_question": {"answer": "", "plan": ""}
-            }
-            return  # swallow the error and continue
-        raise  # Other exceptions: let them bubble up
-
-# Apply the progress‐ledger guard by swapping in our wrapper
-_MO._orchestrate_step = _guard        # hot-swap method
-_MO._progress_guard   = True          # mark as patched
-logging.getLogger("main").info("✅  Magentic-One safety-net activated")
-# ─────────────────────────────────────────────────────────────────────────────x
 # Lifespan handler for startup/shutdown events
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup code: initialize database and configure logging
     # app.state.db = None
     app.state.db = CosmosDB()
-    logging.basicConfig(level=logging.INFO,
+    logging.basicConfig(level=logging.WARNING,
                         format='%(levelname)s: %(asctime)s - %(message)s')
     print("Database initialized.")
     yield
@@ -429,7 +330,7 @@ async def chat_endpoint(
         session_id=_session_id,
         message={"content": message.content, "role": "user"},
         agents=_agents,
-        run_mode_locally=True,
+        run_mode_locally=False,
         timestamp=get_current_time()
     )
 
@@ -446,48 +347,55 @@ async def chat_endpoint(
     return db_message
 
 
-
+# Streaming Chat Endpoint
 @app.get("/chat-stream")
 async def chat_stream(
     session_id: str = Query(...),
     user_id: str = Query(...),
+    # db: Session = Depends(get_db),
     user: dict = Depends(validate_token)
 ):
+    
+   
     logger = logging.getLogger("chat_stream")
     logger.setLevel(logging.WARNING)
-    logger.warning(f"Chat stream started for session_id: {session_id} and user_id: {user_id}")
+    logger.info(f"Chat stream started for session_id: {session_id} and user_id: {user_id}")
+    # create folder for logs if not exists
+    logs_dir="./logs"
+    if not os.path.exists(logs_dir):    
+        os.makedirs(logs_dir)
 
-    logs_dir = "./logs"
-    os.makedirs(logs_dir, exist_ok=True)
-
+    # get the conversation from the database using user and session id
     conversation = crud.get_conversation(user_id, session_id)
-    logger.warning(f"Conversation retrieved: {conversation}")
+    logger.info(f"Conversation retrieved: {conversation}")
+    # get first message from the conversation
+    first_message = conversation["messages"][0]
+    # get the task from the first message as content
+    task = first_message["content"]
+    print("Task:", task)
 
-    task = conversation["messages"][0]["content"]
-    _agents = conversation["agents"]
     _run_locally = conversation["run_mode_locally"]
+    _agents = conversation["agents"]
 
-    # Initialize MagenticOneHelper
-    magentic_one = MagenticOneHelper(
-        logs_dir=logs_dir, save_screenshots=False, run_locally=_run_locally
-    )
+
+    #  Initialize the MagenticOne system with user_id
+    magentic_one = MagenticOneHelper(logs_dir=logs_dir, save_screenshots=False, run_locally=_run_locally, user_id=user_id)
+    logger.info(f"Initializing MagenticOne with agents: {len(_agents)} and session_id: {session_id} and user_id: {user_id}")
     await magentic_one.initialize(agents=_agents, session_id=session_id)
+    logger.info(f"Initialized MagenticOne with agents: {len(_agents)} and session_id: {session_id} and user_id: {user_id}")
 
-    # Use group orchestrator based function-calling chat stream
-    stream, cancellation_token = magentic_one.main(task=task)
+    stream, cancellation_token = magentic_one.main(task = task)
+    logger.info(f"Stream and cancellation token created for task: {task}")
 
-    async def event_generator():
+
+    async def event_generator(stream, conversation):
+
         async for log_entry in stream:
-            json_response = await display_log_message(
-                log_entry=log_entry,
-                logs_dir=logs_dir,
-                session_id=session_id,
-                conversation=conversation,
-                user_id=user_id
-            )
+            json_response = await display_log_message(log_entry=log_entry, logs_dir=logs_dir, session_id=magentic_one.session_id, conversation=conversation, user_id=user_id)    
             yield f"data: {json.dumps(json_response.to_json())}\n\n"
 
-    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+    return StreamingResponse(event_generator(stream, conversation), media_type="text/event-stream")
 
 @app.get("/stop")
 async def stop(session_id: str = Query(...)):
@@ -600,7 +508,6 @@ async def create_team_api(team: dict):
     try:
         team["agents"] = MAGENTIC_ONE_DEFAULT_AGENTS
         response = app.state.db.create_team(team)
-        
         return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error creating team: {str(e)}")
